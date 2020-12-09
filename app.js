@@ -268,22 +268,6 @@ const UserCtrl = (function(){
             };
         },
 
-        // getVS: function(idX, idO){
-        //     let xVS = [];
-        //     let oVS = [];
-        //     data.users.forEach(function(user){
-        //         if(user.id === idX){
-        //             xVS = user.against;
-        //         } else if(user.id === idO){
-        //             oVS = user.against;
-        //         }
-        //     });
-        //     return{
-        //         xVS,
-        //         oVS
-        //     }
-        // },
-
         updateVS: function(resX, resO){
             let gamesLogX = '';
             let gamesLogO = '';
