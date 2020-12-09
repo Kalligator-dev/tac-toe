@@ -179,11 +179,13 @@ const UserCtrl = (function(){
             data.users.forEach(function(user){
                 ratings.push(user.rating);
             });
-
-            let sortedR = ratings.slice().sort(function(a,b){return b-a});
-            let ranks = ratings.slice().map(function(v){return sortedR.indexOf(v)+1});
-            data.playerOne.rank = ranks[ratings.indexOf(data.playerOne.rating)];
-            data.playerTwo.rank = ranks[ratings.indexOf(data.playerTwo.rating)];
+            let sortedR = ratings.sort(function(a,b){return b-a});
+            data.playerOne.rank = sortedR.indexOf(data.playerOne.rating);
+            data.playerTwo.rank = sortedR.indexOf(data.playerTwo.rating);
+            data.users.forEach(u => {
+                u.rank = ratings.indexOf(u.rating)+1
+                StorageCtrl.updateUserInLS(u)
+            })
         },
 
         updateStreakX: function(res){
@@ -395,10 +397,16 @@ const UserCtrl = (function(){
 const UICtrl = (function(){
     const selectors = {
         // Nav Bar selectors
+        navBar: '#main-nav',
         newGameBtn : '#new-btn',
         undoBtn: '#undo-btn',
         clearBtn: '#clear-btn',
         usersBtn: '#users-btn',
+
+        // Leaderboard selectors
+        leaderboardID: 'leaderboard',
+        lbContentID: 'lb-content',
+        lbHeaderID: 'lb-header',
 
         // Reg Form Selectors
         gameUI: '#game-ui',
@@ -631,7 +639,8 @@ const UICtrl = (function(){
             document.querySelector(selectors.tileThreeOne).innerHTML = '<i class="fas fa-ellipsis-h fa-5x"></i>';
             document.querySelector(selectors.tileThreeTwo).innerHTML = '<i class="fas fa-ellipsis-h fa-5x"></i>';
             document.querySelector(selectors.tileThreeThree).innerHTML = '<i class="fas fa-ellipsis-h fa-5x"></i>';
-            document.querySelector('.error').remove();
+            let error = document.querySelector('.error');
+            if(error) error.remove();
             errMsgLog = 0;
         },
 
@@ -832,7 +841,8 @@ const Game = (function(UserCtrl, StorageCtrl, UICtrl){
                     errMsgLog = 1;
                     // Timeout
                     setTimeout(function(){
-                        document.querySelector('.error').remove();
+                        let error = document.querySelector('.error');
+                        if(error) error.remove();
                         errMsgLog = 0;
                     }, 2000);
                     }
@@ -976,7 +986,8 @@ const Game = (function(UserCtrl, StorageCtrl, UICtrl){
                 errMsgLog = 1;
                 // Timeout
                 setTimeout(function(){
-                    document.querySelector('.error').remove();
+                    let error = document.querySelector('.error');
+                    if(error) error.remove();
                     errMsgLog = 0;
                 }, 2000);
                 }
@@ -1091,8 +1102,73 @@ const Game = (function(UserCtrl, StorageCtrl, UICtrl){
     }
 
     const usersBtnClick = function(e){
-
+        
         e.preventDefault();
+        const lb = document.getElementById(gameSelectors.leaderboardID);
+        if(lb){
+            const lbContent = document.getElementById(gameSelectors.lbContentID)
+            lb.style.width = 0.1 + 'rem'
+            lb.style.height = 0.1 + 'rem'
+            lbContent.style.opacity = 0.3
+            setTimeout(() => {
+                lb.style.transform = 'translate(50%, 0)'
+            }, 150);
+            setTimeout(() => {
+                lbContent.remove()
+            }, 450);
+            setTimeout(() => {
+                lb.remove()
+            }, 1000);
+        } else {
+            const usersButton = document.querySelector(gameSelectors.usersBtn);
+            const navBar = document.querySelector(gameSelectors.navBar);
+            const coord = usersButton.getBoundingClientRect();
+            const usersX = coord.x;
+            const usersY = coord.y;
+            const leaderboard = document.createElement('div');
+            leaderboard.id = gameSelectors.leaderboardID;
+            leaderboard.style.width = "0.1rem";
+            leaderboard.style.height = "0.1rem";
+            leaderboard.style.transform = 'translate(25%, -25%)'
+            leaderboard.style.top = usersY + 'px';
+            leaderboard.style.right = window.innerWidth - usersX + 'px';
+            leaderboard.style.opacity = 0.5;
+            navBar.appendChild(leaderboard);
+            const lbContent = document.createElement('div');
+            lbContent.id = gameSelectors.lbContentID
+            const lbHeader = document.createElement('div');
+            lbHeader.id = gameSelectors.lbHeaderID;
+            lbHeader.innerHTML = '<i class="fas fa-trophy fa-3x"></i> <h1>Leaderboard</h1> <i class="fas fa-trophy fa-3x"></i>';
+            const lbList = document.createElement('ul');
+            let usersList = StorageCtrl.getUsersFromLS();
+            usersList.sort((a,b) => a.rank - b.rank)
+            for(let i = 0; i< usersList.length; i++){
+                if(i > 9) break;
+                let userLi = document.createElement('li');
+                let txtUser;
+                if(usersList[i].rank <=3){
+                    txtUser = '<i class="fas fa-trophy"></i> '
+                    if(usersList[i].rank === 1) userLi.style.color = 'var(--x-bg)';
+                    if(usersList[i].rank === 2) userLi.style.color = 'var(--light-grey)';
+                    if(usersList[i].rank === 3) userLi.style.color = 'var(--error-bg)';
+                } else {
+                    txtUser = ''
+                }
+                userLi.innerHTML = `${txtUser}${usersList[i].rank}. ${usersList[i].name} ${usersList[i].rating.toFixed(2)}`
+                lbList.appendChild(userLi);
+            }
+            lbContent.appendChild(lbHeader);
+            lbContent.appendChild(lbList);
+            setTimeout(() => {
+                let widHeight = Math.max(window.innerWidth, window.innerHeight) * 2;
+                leaderboard.style.width = widHeight + 'px';
+                leaderboard.style.height = widHeight + 'px';
+                leaderboard.style.opacity = 0.9;
+            }, 100);
+            setTimeout(() => {
+                document.body.appendChild(lbContent);
+            }, 500);
+        }
     }
 
     const regBtnClick = function(e){
@@ -1138,7 +1214,8 @@ const Game = (function(UserCtrl, StorageCtrl, UICtrl){
                     UICtrl.clearInput();
                     UICtrl.setRegStateO();
                     UICtrl.regState = 'regStateO';
-                    document.querySelector('.error').remove();
+                    let error = document.querySelector('.error');
+                    if(error) error.remove();
                 } else {
                     if(errMsgLog === 0){
                         // Get GameUI div
@@ -1155,7 +1232,8 @@ const Game = (function(UserCtrl, StorageCtrl, UICtrl){
                         errMsgLog = 1;
                         // Timeout
                         setTimeout(function(){
-                            document.querySelector('.error').remove();
+                            let error = document.querySelector('.error');
+                            if(error) error.remove();
                             errMsgLog = 0;
                         }, 2000);
                         }
@@ -1185,7 +1263,8 @@ const Game = (function(UserCtrl, StorageCtrl, UICtrl){
                     UICtrl.showGameState();
                     UICtrl.regState = '';
                     UICtrl.uiState = 'gameState';
-                    document.querySelector('.error').remove();
+                    let error = document.querySelector('.error');
+                    if(error) error.remove();
                 } else {
                     if(errMsgLog === 0){
                         // Get GameUI div
@@ -1202,7 +1281,8 @@ const Game = (function(UserCtrl, StorageCtrl, UICtrl){
                         errMsgLog = 1;
                         // Timeout
                         setTimeout(function(){
-                            document.querySelector('.error').remove();
+                            let error = document.querySelector('.error');
+                            if(error) error.remove();
                             errMsgLog = 0;
                         }, 2000);
                         }
@@ -1224,7 +1304,8 @@ const Game = (function(UserCtrl, StorageCtrl, UICtrl){
             errMsgLog = 1;
             // Timeout
             setTimeout(function(){
-                document.querySelector('.error').remove();
+                let error = document.querySelector('.error');
+                if(error) error.remove();
                 errMsgLog = 0;
             }, 2000);
             }
