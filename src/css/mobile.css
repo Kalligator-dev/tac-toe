@@ -1,0 +1,55 @@
+/* Nav */
+#main-nav .container {
+    padding: 0.1rem;
+}
+
+#main-nav #controls a {
+    margin-right: 2.5rem;
+    font-size: 2.5vw;
+}
+
+#main-nav #users-btn {
+    font-size: 2.4vw;
+}
+
+/* Leaderboard */
+#lb-content {
+    padding: 1rem;
+}
+        #lb-content #lb-header h1{
+            font-size: 1.8rem;
+            margin: 0.25rem;
+        }
+        #lb-content #lb-header i{
+            margin: 0.1rem;
+            font-size: 2.5rem;
+            color: var(--x-bg-2);
+        }
+    #lb-content ul {
+        font-size: 1.5rem;
+    }
+
+/* Game */
+.player-card {
+    display: none;
+}
+
+.container {
+    padding:0;
+}
+
+/* Game */
+#game-ui #score {
+    margin-top: 0.2rem;
+    padding: 0.2rem;
+}
+
+#game {
+    padding: 0.1rem;
+}
+
+#game .game-container .ttt .card i {
+    padding: 1rem;
+    font-size: 6rem;
+}
+
