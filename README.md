@@ -1,7 +1,7 @@
 # TAC TOE
 A simple web app to play tic tac toe locally with friends
 
-##Demo
+## Demo
 https://tactoe.web.app/
 
 ## Features
